@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 # Replace with your API_URL:
-Sitemap: http://localhost:8787/sitemap.xml
+Sitemap: https://wasmer.io/apps/bryanna-21/exile-organization-web-backend/logs/sitemap.xml
