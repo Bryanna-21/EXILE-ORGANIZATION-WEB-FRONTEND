@@ -39,10 +39,10 @@ async function qrModal(name, slug, plat) {
 // ---- pages ----
 const pages = {
   async '/'() {
-    const [s, ps] = await Promise.all([api('/api/settings'), api('/api/products')]);
+    const [s, ps] = await Promise.all([api('/api/settings').catch(() => ({ tagline: 'Building technology for a freer digital future.' })), api('/api/products').catch(() => null)]);
     meta('', s.tagline, '/');
     return `<div class="hero"><img src="/logo.png" alt="Exile Organization" width="280" height="280"><h1>EXILE ORGANIZATION</h1><p>${esc(s.tagline)}</p><div class="row"><a class="btn p" href="/products">Explore the Ecosystem</a><a class="btn" href="/about">Explore Exile</a></div></div>
-    ${sec('The Exile ecosystem', `<div class="grid">${ps.map(card).join('')}</div><p class="sm" style="margin-top:20px">Status labels are literal: only products marked Available can be downloaded.</p>`)}
+    ${sec('The Exile ecosystem', ps ? `<div class="grid">${ps.map(card).join('')}</div><p class="sm" style="margin-top:20px">Status labels are literal: only products marked Available can be downloaded.</p>` : `<p class="muted">The ecosystem list can't be loaded right now. <button class="btn" onclick="location.reload()">Retry</button></p>`)}
     ${s.total_downloads != null ? `<section><h2>${Number(s.total_downloads).toLocaleString()}</h2><p class="muted">unique downloads</p></section>` : ''}`;
   },
   async '/products'() { meta('Products', 'The Exile ecosystem of products and research projects.', '/products'); const ps = await api('/api/products'); return sec('Products & ecosystem', `<div class="grid">${ps.map(card).join('')}</div>`); },
@@ -85,6 +85,8 @@ async function dlPage(slug, plat) {
   try { const r = await fetch(`${API_URL}/api/qr/${slug}/${plat}`); if (!r.ok) throw 0; } catch { return main.innerHTML = `<div class="err404"><h1>Unavailable</h1><p class="muted">This download is not available right now.</p><a class="btn" href="/products">Browse products</a></div>`; }
   setTimeout(() => { main.querySelector('p').textContent = 'Download starting…'; location.href = `${API_URL}/download/${slug}/${plat}`; main.querySelector('.err404').insertAdjacentHTML('beforeend', `<p class="sm">If nothing happens:</p><a class="btn p" href="${API_URL}/download/${esc(slug)}/${esc(plat)}">Download ${esc(slug)}</a>`); }, 600);
 }
+const misconfigured = () => /localhost|127\.0\.0\.1/.test(API_URL) && !/^(localhost|127\.0\.0\.1)$/.test(location.hostname);
+const errorPage = e => `<div class="err404"><h1 style="color:var(--warn)">${e.status ? 'SERVER ERROR' : 'CONNECTION FAILED'}</h1><p class="muted">${misconfigured() ? "This site isn't connected to its API yet. Set <code>API_URL</code> in <code>config.js</code> to the deployed backend address." : e.status ? 'The Exile servers had a problem. Please try again shortly.' : "We couldn't reach the Exile servers. Check your connection and try again."}</p><button class="btn p" onclick="location.reload()">Retry</button></div>`;
 const notFound = () => `<div class="err404"><h1>404</h1><p class="muted">SYSTEM PATH NOT FOUND<br>The requested destination does not exist.</p><a class="btn p" href="/">Return to Exile</a></div>`;
 
 async function route() {
@@ -94,7 +96,7 @@ async function route() {
   if (d) return dlPage(d[1], d[2]);
   main.innerHTML = skel(3); main.style.animation = 'none'; void main.offsetWidth; main.style.animation = '';
   try { const h = m ? (m[1] === 'products' ? () => product(m[2]) : () => post(m[2])) : pages[path]; main.innerHTML = h ? await h() : (meta('Not found', '', path), notFound()); }
-  catch (e) { main.innerHTML = e.status === 404 ? notFound() : `<div class="err404"><h1 style="color:var(--err)">Error</h1><p class="muted">Could not load this page. Please try again.</p><button class="btn" onclick="location.reload()">Retry</button></div>`; }
+  catch (e) { main.innerHTML = e.status === 404 ? notFound() : errorPage(e); }
   if (!location.hash) scrollTo(0, 0); reveal(); main.focus({ preventScroll: true });
 }
 document.addEventListener('click', e => {
