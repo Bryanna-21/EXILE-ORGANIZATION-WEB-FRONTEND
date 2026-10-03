@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 # Replace with your API_URL:
-Sitemap: https://exile-organization-web-backend.vercel.app//sitemap.xml
+Sitemap: https://exile-organization-web-backend.vercel.app/sitemap.xml
