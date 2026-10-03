@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 # Replace with your API_URL:
-Sitemap: https://wasmer.io/apps/bryanna-21/exile-organization-web-backend/logs/sitemap.xml
+Sitemap: https://exile-organization-web-backend.vercel.app//sitemap.xml
