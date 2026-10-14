@@ -20,7 +20,7 @@ function reveal() {
   const tl = $('.tl'); if (tl) { const f = tl.querySelector('.fill'), on = () => { const r = tl.getBoundingClientRect(); f.style.height = Math.max(0, Math.min(r.height, innerHeight * .6 - r.top)) + 'px'; }; addEventListener('scroll', on, { passive: true }); on(); }
 }
 const card = p => `<a class="card rv" href="/products/${esc(p.slug)}">${pill(p.status)}<h3>${esc(p.name)}</h3><p class="muted">${esc(p.short_description)}</p><span class="sm">${esc(p.category)}</span></a>`;
-const sec = (h, inner) => `<section><h2>${h}</h2>${inner}</section>`;
+const sec = (h, inner) => `<section><h2 class="rv">${h}</h2>${inner}</section>`;
 const empty = t => `<p class="muted">${t}</p>`;
 const dt = d => d ? esc(String(d).slice(0, 10)) : '';
 
@@ -41,9 +41,9 @@ const pages = {
   async '/'() {
     const [s, ps] = await Promise.all([api('/api/settings').catch(() => ({ tagline: 'Building technology for a freer digital future.' })), api('/api/products').catch(() => null)]);
     meta('', s.tagline, '/');
-    return `<div class="hero"><img src="/logo.png" alt="Exile Organization" width="280" height="280"><h1>EXILE ORGANIZATION</h1><p>${esc(s.tagline)}</p><div class="row"><a class="btn p" href="/products">Explore the Ecosystem</a><a class="btn" href="/about">Explore Exile</a></div></div>
+    return `<div class="hero"><div class="logo-wrap"><i class="orbit"></i><i class="orbit o2"></i><img src="/logo.png" alt="Exile Organization" width="280" height="280"></div><h1 data-split>EXILE ORGANIZATION</h1><p class="tag">${esc(s.tagline)}</p><div class="row"><a class="btn p" href="/products">Explore the Ecosystem</a><a class="btn" href="/about">Explore Exile</a></div><span class="down" aria-hidden="true"></span></div>
     ${sec('The Exile ecosystem', ps ? `<div class="grid">${ps.map(card).join('')}</div><p class="sm" style="margin-top:20px">Status labels are literal: only products marked Available can be downloaded.</p>` : `<p class="muted">The ecosystem list can't be loaded right now. <button class="btn" onclick="location.reload()">Retry</button></p>`)}
-    ${s.total_downloads != null ? `<section><h2>${Number(s.total_downloads).toLocaleString()}</h2><p class="muted">unique downloads</p></section>` : ''}`;
+    ${s.total_downloads != null ? `<section><h2 class="big" data-count="${Number(s.total_downloads)}">${Number(s.total_downloads).toLocaleString()}</h2><p class="muted">unique downloads</p></section>` : ''}`;
   },
   async '/products'() { meta('Products', 'The Exile ecosystem of products and research projects.', '/products'); const ps = await api('/api/products'); return sec('Products & ecosystem', `<div class="grid">${ps.map(card).join('')}</div>`); },
   async '/research'() {
@@ -110,4 +110,5 @@ $('#links').innerHTML = NAV.map(([h, l]) => `<a href="${h}">${l}</a>`).join('');
 $('#menuBtn').onclick = () => { const o = $('#links').classList.toggle('open'); $('#menuBtn').setAttribute('aria-expanded', o); };
 addEventListener('offline', () => { $('#net').className = 'off'; $('#net').textContent = '● CONNECTION INTERRUPTED'; });
 addEventListener('online', () => { $('#net').className = 'on'; $('#net').textContent = '● CONNECTION RESTORED'; setTimeout(() => { $('#net').textContent = ''; }, 2500); });
-route().finally(() => { $('#boot').classList.add('off'); setTimeout(() => $('#boot').remove(), 400); });
+const calm = matchMedia('(prefers-reduced-motion: reduce)').matches;
+Promise.all([route(), new Promise(r => setTimeout(r, calm ? 0 : 1100))]).finally(() => { $('#boot').classList.add('off'); setTimeout(() => $('#boot').remove(), 700); });
