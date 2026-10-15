@@ -126,6 +126,18 @@ function network(hero) {
   requestAnimationFrame(loop);
 }
 
+// ---- mobile menu: scrim, scroll lock, Escape to close ----
+{
+  const links = $('#links'), btn = $('#menuBtn');
+  if (links && btn) {
+    const scrim = document.createElement('div'); scrim.id = 'scrim'; document.body.append(scrim);
+    const close = () => { if (links.classList.contains('open')) { links.classList.remove('open'); btn.setAttribute('aria-expanded', 'false'); } };
+    new MutationObserver(() => document.body.classList.toggle('menu-open', links.classList.contains('open'))).observe(links, { attributes: true, attributeFilter: ['class'] });
+    scrim.addEventListener('click', close); addEventListener('keydown', e => e.key === 'Escape' && close());
+    matchMedia('(min-width: 861px)').addEventListener('change', close);
+  }
+}
+
 // ---- wire up whenever the router swaps page content ----
 const scan = () => { split(main); counters(main); const h = main.querySelector('.hero'); if (h) network(h); };
 new MutationObserver(scan).observe(main, { childList: true });
